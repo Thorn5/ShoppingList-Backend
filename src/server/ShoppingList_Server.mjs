@@ -86,97 +86,6 @@ app.get("/users", async (req, res) => {
   }
 });
 
-app.get("/lists", async (req, res) => {
-  try {
-    const client = await pool.connect();
-    const jsonQueryAllUsers = `
-  SELECT json_agg(
-    json_build_object(
-      'user_id', u.user_id,
-      'first_name', u.first_name,
-      'last_name', u.last_name,
-      'email', u.email,
-      'shopping_lists', (
-      SELECT json_agg(
-        json_build_object(
-          'list_shop_id', sls.list_shop_id,
-          'shop_name', s.shop_name,
-          'website', s.website,
-          'aisles', (
-          SELECT json_agg(
-            json_build_object(
-              'aisle_id', a.aisle_id,
-              'name', a.name,
-              'description', a.description,
-              'products', (
-              SELECT json_agg(
-                json_build_object(
-                  'product_id', p.product_id,
-                  'name', p.name,
-                  'notes', lap.notes,
-                  'quantity', lap.quantity,
-                  'price', lap.price
-                )
-              )
-                    FROM list_aisle_products lap
-                    JOIN products p ON lap.product_id = p.product_id
-                    WHERE lap.list_shop_id = lsa.list_shop_id AND lap.aisle_id = lsa.aisle_id
-            )
-          )
-        )
-              FROM list_shop_aisles lsa
-              JOIN aisles a ON lsa.aisle_id = a.aisle_id
-              WHERE lsa.list_shop_id = sls.list_shop_id
-      )
-    )
-  )
-        FROM shopping_list_shops sls
-        JOIN shops s ON sls.shop_id = s.shop_id
-        WHERE sls.user_id = u.user_id
-      ),
-    'todo_lists', (
-      SELECT json_agg(
-        json_build_object(
-          'list_id', tl.list_id,
-          'name', tl.name,
-          'description', tl.description,
-          'entries', (
-          SELECT json_agg(
-            json_build_object(
-              'entry_id', te.entry_id,
-              'name', te.name,
-              'description', te.description,
-              'due_date', te.due_date,
-              'status', te.status
-            )
-          )
-              FROM todo_entries te
-              WHERE te.list_id = tl.list_id
-        )
-      )
-        )
-        FROM todo_lists tl
-        WHERE tl.user_id = u.user_id
-      )
-    )
-  ) AS users_data
-  FROM users u;
-  `;
-    console.log(jsonQueryAllUsers);
-    const result = await client.query(jsonQueryAllUsers);
-    if (result.rows.length === 0 || !result.rows[0].users_data) {
-      res.status(404).send("No users or shopping lists found");
-    } else {
-      res.json(result.rows[0].users_data);
-    }
-
-    client.release();
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error: " + err);
-  }
-});
-
 app.get("/lists/:id", async (req, res) => {
   try {
     const client = await pool.connect();
@@ -252,6 +161,7 @@ app.get("/lists/:id", async (req, res) => {
     FROM users u
     WHERE u.user_id = $1;
     `;
+    
     console.log(jsonQuerySingleUser);
     const result = await client.query(jsonQuerySingleUser, [req.params.id]);
     if (result.rows.length === 0) {
