@@ -161,15 +161,14 @@ app.get("/lists/:id", async (req, res) => {
     FROM users u
     WHERE u.user_id = $1;
     `;
-    
-    console.log(jsonQuerySingleUser);
+    // console.log(jsonQuerySingleUser);
+    console.log(`JSON query run: ${new Date().toLocaleString()}`);
     const result = await client.query(jsonQuerySingleUser, [req.params.id]);
     if (result.rows.length === 0) {
       res.status(404).send("User not found");
     } else {
       res.json(result.rows[0].user_data);
     }
-
     client.release();
   } catch (err) {
     console.error(err);
@@ -179,4 +178,5 @@ app.get("/lists/:id", async (req, res) => {
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+  console.log(`Server Started: ${new Date().toLocaleString()}`);
 });
