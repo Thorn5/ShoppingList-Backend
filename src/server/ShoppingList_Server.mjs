@@ -6,9 +6,7 @@ import pkg from "pg";
 import { config } from "dotenv";
 
 config();
-
 const { Pool } = pkg;
-
 const app = express();
 const port = process.env.SERVER_PORT || 8001;
 
@@ -113,8 +111,7 @@ app.get("/lists/:id", async (req, res) => {
                         'product_id', p.product_id,
                         'name', p.name,
                         'notes', lap.notes,
-                        'quantity', lap.quantity,
-                        'price', lap.price
+                        'quantity', lap.quantity
                       )
                     )
                     FROM list_aisle_products lap
