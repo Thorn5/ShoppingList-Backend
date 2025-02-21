@@ -142,8 +142,7 @@ app.get("/lists/:id", async (req, res) => {
                   'entry_id', te.entry_id,
                   'name', te.name,
                   'description', te.description,
-                  'due_date', te.due_date,
-                  'status', te.status
+                  'due_date', te.due_date
                 )
               )
               FROM todo_entries te
